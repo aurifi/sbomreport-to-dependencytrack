@@ -1,9 +1,14 @@
-FROM alpine:3.18.0
-RUN apk update && apk add --upgrade libcrypto3 libssl3
-RUN adduser -u 10000 -D -g '' sbomreport-to-dependencytrack sbomreport-to-dependencytrack
+# -- Certs
+FROM alpine:3.23 AS certs
+RUN apk add --no-cache ca-certificates
+
+# -- Runtime
+FROM scratch 
+
+COPY --from=certs /etc/ssl/certs/ca-certificates.crt /etc/ssl/certs/ca-certificates.crt
+USER 1000:1000
 
 COPY sbomreport-to-dependencytrack /usr/local/bin/sbomreport-to-dependencytrack
 
-USER 10000
 EXPOSE 8080
 ENTRYPOINT ["sbomreport-to-dependencytrack"]
